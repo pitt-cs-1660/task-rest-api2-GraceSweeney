@@ -103,6 +103,13 @@ async def delete_task(task_id: int):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+    task = cursor.fetchone()
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
     cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
     
     conn.commit()
