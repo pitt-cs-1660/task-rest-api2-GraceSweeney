@@ -86,6 +86,25 @@ async def update_task(task_id: int, task_data: TaskCreate):
     Returns:
         TaskRead: The updated task data
     """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+    task = cursor.fetchone()
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    cursor.execute(
+        "UPDATE tasks SET title = ?, description = ?, completed = ? WHERE id = ?",
+        (task_data.title, task_data.description, task_data.completed, task_id),
+    )
+    conn.commit()
+
+    cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+    updated_task = cursor.fetchone()
+
+    return TaskRead(id=updated_task[0], title=updated_task[1], description=updated_task[2], completed=updated_task[3])
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
 
 
